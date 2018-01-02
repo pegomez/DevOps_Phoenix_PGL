@@ -1,0 +1,60 @@
+version: "3"
+#docker stack deploy -c docker-compose.yml p4gps
+
+# when running services, the container id of each can be seen with 'docker ps'
+#then, you can enter in its shell with ' winpty docker exec -it TheID bash'
+# docker stack rm partsunlimitedmrp para eliminar la pila de serivcios
+
+
+
+services:
+  mongo:
+    image: pegomez/devops_phoenix_pgl:db
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 200M
+      restart_policy:
+        condition: on-failure
+     
+    ports:
+      - "28017:28017"
+      - "27017:27017"
+    volumes:
+      - "db-data:/data/db" #to keep data stored after feeding database
+
+   
+  
+  order:
+    image: pegomez/devops_phoenix_pgl:order
+    depends_on:
+      - "mongo"
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 300M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "8080:8080"
+
+  
+  web:
+    image: pegomez/devops_phoenix_pgl:web
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.15"
+          memory: 50M
+      restart_policy:
+        condition: on-failure
+    ports:
+      - "80:8080"  
+  
+volumes:
+   db-data:
